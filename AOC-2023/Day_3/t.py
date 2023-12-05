@@ -1,6 +1,5 @@
 import re
 
-#The search() function returns a Match object:
 def gen(t):
   txt = t
   while True:
