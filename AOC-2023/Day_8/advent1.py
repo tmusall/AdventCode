@@ -1,4 +1,5 @@
 import sys
+import math
 
 class AdventOfCode(object):
   def __init__(self, fileName):
@@ -51,16 +52,18 @@ class AdventOfCode(object):
 
 
   def FindEndNodes(self, startNodes, endsWith, dirGen):
-    stepCnt = 0
+    stepCnt = [ ]
     nodes = startNodes
 
-    for nextDir in dirGen:
-      if self.AllNodesEndWith(nodes, endsWith):
-        break
-      for i,n in enumerate(nodes):
-        nodes[i] = self.nodes[n][nextDir]
-      stepCnt += 1
-
+    for node in nodes:
+      dg = self.DirGen()
+      cnt = 0
+      for nextDir in dg:
+        if node[-1] == endsWith:
+          break
+        node = self.nodes[node][nextDir]
+        cnt += 1
+      stepCnt.append(cnt)
     return stepCnt
 
 
@@ -80,8 +83,9 @@ class AdventOfCode(object):
     # Part 2
     startNodes = self.FindStartNodes('A')
     print(startNodes)
-    p2_result = self.FindEndNodes(startNodes, 'Z', dirGen)
-
+    t = self.FindEndNodes(startNodes, 'Z', dirGen)
+    print(t)
+    p2_result = math.lcm(*t)
     return p1_result, p2_result
 
 
