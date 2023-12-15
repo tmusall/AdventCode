@@ -11,7 +11,7 @@ class AdventOfCode(object):
     readings = text.split()
     readings = [ int(x) for x in readings ]
     rows = [ readings ]
-    while sum(rows[-1]) != 0:
+    while (sum(rows[-1]) != 0) or (len(set(rows[-1])) != 1):
       diffs = [ ]
       prev = None
       for x in rows[-1]:
