@@ -7,11 +7,10 @@ class AdventOfCode(object):
     self.fileGen = (row for row in open(self.fname, 'r'))
 
 
-  def ProcLine(self, text):
-    readings = text.split()
-    readings = [ int(x) for x in readings ]
+  def ComputeDiffs(self, text):
+    readings = list(map(int, text.split()))
     rows = [ readings ]
-    while (sum(rows[-1]) != 0) or (len(set(rows[-1])) != 1):
+    while not all(v==0 for v in rows[-1]):
       diffs = [ ]
       prev = None
       for x in rows[-1]:
@@ -19,36 +18,51 @@ class AdventOfCode(object):
           diffs.append(x - prev)
         prev = x
       rows.append(diffs)
+    return rows
 
-    #print(rows)
+
+  def ProcLineP1(self, rows):
     for r in rows:
       r.append(0)
 
     prev = None
-    for r in rows.__reversed__():
+    for r in reversed(rows):
       if prev != None:
         r[-1] = r[-2] + prev[-1]
       prev = r
 
-    print()
-    for r in rows:
-      print(r)
     retVal = rows[0][-1]
     return retVal
 
 
+  def ProcLineP2(self, rows):
+    for r in rows:
+      r.insert(0, 0)
+
+    prev = None
+    for r in reversed(rows):
+      if prev != None:
+        r[0] = r[1] - prev[0]
+      prev = r
+
+    retVal = rows[0][0]
+    return retVal
+
+
   def DoWork(self):
-    sumTotal = 0
+    p1_result = 0
+    p2_result = 0
 
     for line in self.fileGen:
       line = line.strip('\n').strip()
-      sumTotal += self.ProcLine(line)
+      rowsP1 = self.ComputeDiffs(line)
+      rowsP2 = rowsP1
+      # Part 1
+      p1_result += self.ProcLineP1(rowsP1)
 
-    # Part 1
-    p1_result = sumTotal
+      # Part 2
+      p2_result += self.ProcLineP2(rowsP2)
 
-    # Part 2
-    p2_result = 0
     return p1_result, p2_result
 
 
