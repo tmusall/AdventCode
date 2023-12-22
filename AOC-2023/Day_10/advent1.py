@@ -1,14 +1,15 @@
 import sys
 import math
 
+pipes = [ ]
+rowRange = None
+colRange = None
+moveDirs = { 'U':('|','F','7'), 'D':('|','L','J'), 'L':('-','L','F'), 'R':('-','7','J') }
+
 class Tracker(object):
-  def __init__(self, name, pipes, start, moveDirs, rowRange, colRange):
+  def __init__(self, name, start):
     self.name = name
-    self.pipes = pipes
     self.start = start
-    self.moveDirs = moveDirs
-    self.rowRange = rowRange
-    self.colRange = colRange
     self.curPos = start
     self.curDir = None
     self.stepCnt = 0
@@ -41,9 +42,10 @@ class Tracker(object):
 
   def TakeFirstStep(self, takenPos=(None,None)):
     self.stepCnt += 1
-    for dir in self.moveDirs:
+    for dir in moveDirs:
       nextPos = self.CheckMove(self.curPos, dir)
       if (None not in nextPos) and (nextPos != takenPos):
+        self.LeaveBreadCrumb(self.curPos)
         self.curPos = nextPos
         self.curDir = dir
         break
@@ -60,6 +62,7 @@ class Tracker(object):
     dir = self.GetNextDir()
     nextPos = self.CheckMove(self.curPos, dir)
     if (None not in nextPos):
+      self.LeaveBreadCrumb(self.curPos)
       self.curPos = nextPos
       self.curDir = dir
     else:
@@ -70,34 +73,40 @@ class Tracker(object):
     return self.curPos
 
 
+  def LeaveBreadCrumb(self, pos):
+    row, col = pos
+    global pipes
+    pipes[row] = pipes[row][:col] + '#' + pipes[row][col+1:]
+
+
   def CheckMove(self, pos, dir):
     row, col = pos
     if dir == 'U':
-      if row-1 in self.rowRange:
+      if row-1 in rowRange:
         row -= 1
-        if self.pipes[row][col] in self.moveDirs[dir]:
+        if pipes[row][col] in moveDirs[dir]:
           return (row, col)
     elif dir == 'D':
-      if row+1 in self.rowRange:
+      if row+1 in rowRange:
         row += 1
-        if self.pipes[row][col] in self.moveDirs[dir]:
+        if pipes[row][col] in moveDirs[dir]:
           return (row, col)
     elif dir == 'L':
-      if col-1 in self.colRange:
+      if col-1 in colRange:
         col -= 1
-        if self.pipes[row][col] in self.moveDirs[dir]:
+        if pipes[row][col] in moveDirs[dir]:
           return (row, col)
     else: # dir == 'R'
-      if col+1 in self.colRange:
+      if col+1 in colRange:
         col += 1
-        if self.pipes[row][col] in self.moveDirs[dir]:
+        if pipes[row][col] in moveDirs[dir]:
           return (row, col)
     return (None, None)
 
 
   def GetNextDir(self):
     dirMap = { '-':('L','R'), '|':('U','D'), 'F':('D','R'), '7':('D','L'), 'J':('U','L'), 'L':('U','R') }
-    curChar = self.pipes[self.curPos[0]][self.curPos[1]]
+    curChar = pipes[self.curPos[0]][self.curPos[1]]
     possibleDirs = dirMap[curChar]
     if self.IsOppositeDir(possibleDirs[0]):
       return possibleDirs[1]
@@ -108,17 +117,11 @@ class AdventOfCode(object):
   def __init__(self, fileName):
     self.fname = fileName
     self.fileGen = (row for row in open(self.fname, 'r'))
-    self.pipes = [ ]
-    self.rowRange = None
-    self.colRange = None
-    self.moveDirs = { 'U':('|','F','7'), 'D':('|','L','J'),
-                      'L':('-','L','F'), 'R':('-','7','J') }
 
 
   def ProcPuzzle(self, start):
     # Track pipe loop in both directions
-    trackers = ( Tracker('Trkr_1', self.pipes, start, self.moveDirs, self.rowRange, self.colRange),
-                 Tracker('Trkr_2', self.pipes, start, self.moveDirs, self.rowRange, self.colRange) )
+    trackers = ( Tracker('Trkr_1', start), Tracker('Trkr_2', start) )
 
     firstPos = (None,None)
     for tracker in trackers:
@@ -132,6 +135,7 @@ class AdventOfCode(object):
         tracker.TakeNextStep()
         #tracker.Print()
       if trackers[0] == trackers[1]:
+        trackers[0].LeaveBreadCrumb(trackers[0].GetPosition())
         retVal = max(trackers[0].GetSteps(), trackers[1].GetSteps())
         break
       if trackers[0].IsAtStartPos() or trackers[1].IsAtStartPos():
@@ -148,7 +152,7 @@ class AdventOfCode(object):
 
 
   def FindStart(self):
-    for i,r in enumerate(self.pipes):
+    for i,r in enumerate(pipes):
       for j,c in enumerate(r):
         if c == 'S':
           return (i, j)
@@ -158,19 +162,68 @@ class AdventOfCode(object):
   def DoWork(self):
     p1_result = 0
     p2_result = 0
+    origPipes = [ ]
 
     for line in self.fileGen:
       line = line.strip('\n').strip()
-      self.pipes.append(line)
+      pipes.append(line)
+      origPipes.append(line)
 
-    self.rowRange = range(0, len(self.pipes))
-    self.colRange = range(0, len(self.pipes[0]))
+
+    global rowRange, colRange
+    rowRange = range(0, len(pipes))
+    colRange = range(0, len(pipes[0]))
     start = self.FindStart()
 
     # Part 1
     p1_result = self.ProcPuzzle(start)
 
     # Part 2
+    trans = ''.maketrans('|-F7LJ', '......')
+    pipeHash = [ ]
+    for r in pipes:
+      s = r.translate(trans)
+      print(r, s)
+      pipeHash.append(s)
+
+    #for r in pipeHash:
+    #  print(r)
+
+    pipeLoop = [ ]
+    for i,r in enumerate(pipeHash):
+      origRow = origPipes[i]
+      newRow = ''
+      for x,c in enumerate(r):
+        if c == '#':
+          newRow += origRow[x]
+        else:
+          newRow += c
+      pipeLoop.append(newRow)
+
+    print()
+    for r in pipeLoop:
+      print(r)
+
+    trans = ''.maketrans('S','F')
+    pipeLoop[1] = pipeLoop[1].translate(trans)
+    insideTiles = 0
+    for r in pipeLoop:
+      inside = False
+      io = ''
+      lastCorner = ''
+      for c in r:
+        if inside and (c == '.'):
+          insideTiles += 1
+        elif c == '|':
+          inside = not inside
+        elif c in 'F7LJ':
+          if ((c == 'F') and (lastCorner == 'J')) or ((c == 'L') and (lastCorner == '7')):
+            inside = not inside
+          lastCorner = c
+        io += 'I' if inside else 'O'
+      print(io)
+      #print(r)
+    p2_result = insideTiles
 
     return p1_result, p2_result
 
