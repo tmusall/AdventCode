@@ -9,25 +9,27 @@ defmodule Advent do
       end)
     |> Enum.unzip()
     |> findTotalDistance()
-    |> findFrequency()
+    |> findSimilarity()
   end
 
+  # Part 1
   defp findTotalDistance({leftList, rightList}) do
-    IO.puts("Total Distance: ")
-    Enum.zip(Enum.sort(leftList), Enum.sort(rightList))
-    |> Enum.map(fn {l, r} -> abs(l-r) end)
-    |> Enum.sum()
-    |> IO.inspect()
+    distance =
+      Enum.zip(Enum.sort(leftList), Enum.sort(rightList))
+      |> Enum.map(fn {l, r} -> abs(l-r) end)
+      |> Enum.sum()
+    IO.puts("Total Distance: #{distance}")
     {leftList, rightList}
   end
 
-  defp findFrequency({leftList, rightList}) do
-    IO.puts("Frequency: ")
+  # Part 2
+  defp findSimilarity({leftList, rightList}) do
     right_counts = rightList |> Enum.frequencies()
 
-    Enum.reduce(leftList, 0, fn location_id, acc ->
+    similarity =
+      Enum.reduce(leftList, 0, fn location_id, acc ->
       acc + location_id * Map.get(right_counts, location_id, 0)
-    end)
-    |> IO.inspect()
+      end)
+    IO.puts("Similarity: #{similarity}")
   end
 end
