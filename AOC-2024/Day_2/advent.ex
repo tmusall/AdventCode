@@ -3,27 +3,28 @@ defmodule Advent do
     fileName
     |> File.read!()
     |> String.split("\n", trim: true)
-    |> String.split(" ")
-    # myList |> Enum.chunk_every(2,1, :discard)
-    # s |> String.split(" ") |> Enum.map(fn x -> String.to_integer(x) end)
-    #  [7, 6, 4, 2, 1]
-    #|> Enum.map(fn entry ->
-    #    [left, right] = String.split(entry)
-    #    {String.to_integer(left), String.to_integer(right)}
-    #  end)
-    #|> Enum.unzip()
-    #|> findTotalDistance()
-    #|> findSimilarity()
+    |> Enum.map(fn entry ->
+         String.split(entry)
+         |> Enum.map(fn strNum -> String.to_integer(strNum) end)
+       end)
+    |> evalReportSafety()
   end
 
   # Part 1
-  defp findTotalDistance({leftList, rightList}) do
-    distance =
-      Enum.zip(Enum.sort(leftList), Enum.sort(rightList))
-      |> Enum.map(fn {l, r} -> abs(l-r) end)
-      |> Enum.sum()
-    IO.puts("Total Distance: #{distance}")
-    {leftList, rightList}
+  defp evalReportSafety(reportLists) do
+    safeOnes = 0
+    reportLists
+    |> Enum.map(fn numList ->
+         Enum.chunk_every(numList, 2, 1, :discard)
+         |> Enum.map(fn [a, b] -> abs(a - b) end)
+         |> Enum.map(fn x -> if(x in 1..3, do: 0, else: 1) end)
+         |> IO.inspect()
+       end)
+
+    #|> IO.inspect()
+    #  |> Enum.sum()
+
+    IO.puts("Safe Reports: #{safeOnes}")
   end
 
   # Part 2
