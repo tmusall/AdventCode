@@ -38,3 +38,50 @@ defmodule Advent do
     IO.puts("Similarity: #{similarity}")
   end
 end
+
+
+defmodule Advent do
+  def doWork(numList, incDir) do
+    Enum.chunk_every(numList, 2, 1, :discard)
+    |> Enum.map(fn [a, b] ->
+        if abs(a - b) in 1..3 do
+          if incDir == :dec do
+            if(a - b > 0, do: 0, else: 1)
+          else
+            if(a - b < 0, do: 0, else: 1)
+          end
+        else
+          1
+        end
+       end)
+    |> Enum.sum()
+    #|> IO.inspect()
+
+    #IO.puts("")
+  end
+end
+
+
+myList = [[7, 6, 4, 2, 1],[1, 2, 7, 8, 9],[9, 7, 6, 2, 1],[1, 3, 2, 4, 5],[8, 6, 4, 4, 1],[1, 3, 6, 7, 9]]
+
+Enum.map(myList, fn numList ->
+  if((Enum.at(numList,0) - Enum.at(numList,1)) > 0, do: Advent.doWork(numList, :dec), else: Advent.doWork(numList, :inc))
+  end)
+  |> IO.inspect()
+  #IO.puts("Safe Records: #{safeRecords}")
+
+
+myList = [[1, 2], [2, 3], [3, 4]]
+
+Enum.map(myList, fn [first, second] = list -> 
+  direction = if first - second > 0, do: :dec, else: :inc
+  doWork(list, direction)
+end)
+
+def doWork(numList, :dec) when is_list(numList) do
+  IO.inspect(numList)
+end
+def doWork(numList, :inc) when is_list(numList) do
+  IO.inspect(numList)
+end
+def doWork([_], :dec), do: 20
