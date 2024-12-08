@@ -7,81 +7,66 @@ defmodule Advent do
          String.split(entry)
          |> Enum.map(fn strNum -> String.to_integer(strNum) end)
        end)
-    |> evalReportSafety()
+    |> Enum.map(fn numList = [a, b | _] ->
+         incDir = if a - b > 0, do: :dec, else: :inc
+         Enum.chunk_every(numList, 2, 1, :discard)
+         |> Enum.map(fn twoNums -> procRecord(twoNums, incDir) end)
+       end)
+    |> evalReportSafety(1)
+    |> evalP2ReportSafety()
+    :ok
+  end
+
+  # Helper functions
+  defp procRecord([a, b], :dec) do
+    case abs(a - b) do
+      x when x in 1..3 and a > b -> 0
+      _ -> 1
+    end
+  end
+
+  defp procRecord([a, b], :inc) do
+    case abs(a - b) do
+      x when x in 1..3 and a < b -> 0
+      _ -> 1
+    end
   end
 
   # Part 1
-  defp evalReportSafety(reportLists) do
-    safeOnes = 0
+  defp evalReportSafety(reportLists, partNum) do
     reportLists
-    |> Enum.map(fn numList ->
-         Enum.chunk_every(numList, 2, 1, :discard)
-         |> Enum.map(fn [a, b] -> abs(a - b) end)
-         |> Enum.map(fn x -> if(x in 1..3, do: 0, else: 1) end)
-         |> IO.inspect()
-       end)
-
-    #|> IO.inspect()
-    #  |> Enum.sum()
-
-    IO.puts("Safe Reports: #{safeOnes}")
+    |> IO.inspect()
+    |> Enum.map(fn result -> Enum.sum(result) end)
+    |> Enum.count(fn x -> x == 0 end)
+    |> IO.inspect(label: "Part #{partNum} Safe Reports")
+    reportLists
   end
 
   # Part 2
-  defp findSimilarity({leftList, rightList}) do
-    right_counts = rightList |> Enum.frequencies()
-
-    similarity =
-      Enum.reduce(leftList, 0, fn location_id, acc ->
-      acc + location_id * Map.get(right_counts, location_id, 0)
-      end)
-    IO.puts("Similarity: #{similarity}")
-  end
-end
-
-
-defmodule Advent do
-  def doWork(numList, incDir) do
-    Enum.chunk_every(numList, 2, 1, :discard)
-    |> Enum.map(fn [a, b] ->
-        if abs(a - b) in 1..3 do
-          if incDir == :dec do
-            if(a - b > 0, do: 0, else: 1)
-          else
-            if(a - b < 0, do: 0, else: 1)
-          end
-        else
-          1
-        end
+  defp evalP2ReportSafety(reportLists) do
+    reportLists
+    # Remove the first '1' in the report list and eval again
+    |> Enum.map(fn list ->
+         case Enum.split_while(list, &(&1 != 1)) do
+           {result, [_ | rest]} -> result ++ [0 | rest]
+           {result, []} -> result
+         end
        end)
-    |> Enum.sum()
-    #|> IO.inspect()
-
-    #IO.puts("")
+    |> evalReportSafety(2)
   end
 end
 
 
-myList = [[7, 6, 4, 2, 1],[1, 2, 7, 8, 9],[9, 7, 6, 2, 1],[1, 3, 2, 4, 5],[8, 6, 4, 4, 1],[1, 3, 6, 7, 9]]
-
-Enum.map(myList, fn numList ->
-  if((Enum.at(numList,0) - Enum.at(numList,1)) > 0, do: Advent.doWork(numList, :dec), else: Advent.doWork(numList, :inc))
-  end)
+# Remove the first occurence of a value
+valToRemove = 1
+[[0, 1, 1, 0], [0, 0, 1, 1], [1, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]]
+ |> Enum.map(fn list ->
+      r = Enum.split_while(list, &(&1 != valToRemove))
+      #IO.inspect(r)
+      case r do
+        {result, [_ | rest]} -> result ++ rest
+        {result, []} -> result
+      end
+    end)
   |> IO.inspect()
-  #IO.puts("Safe Records: #{safeRecords}")
 
-
-myList = [[1, 2], [2, 3], [3, 4]]
-
-Enum.map(myList, fn [first, second] = list -> 
-  direction = if first - second > 0, do: :dec, else: :inc
-  doWork(list, direction)
-end)
-
-def doWork(numList, :dec) when is_list(numList) do
-  IO.inspect(numList)
-end
-def doWork(numList, :inc) when is_list(numList) do
-  IO.inspect(numList)
-end
-def doWork([_], :dec), do: 20
