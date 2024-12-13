@@ -57,6 +57,19 @@ defmodule Advent do
 end
 
 
+# Create sublists from a list
+defmodule ListCombinator do
+  def sublists(list) do
+    Enum.map(0..(length(list) - 1), &(List.delete_at(list, &1)))
+  end
+end
+
+inputList = [1, 2, 3, 4]
+inputList |> IO.inspect(label: "Input")
+
+IO.inspect(ListCombinator.sublists(inputList), label: "Output")
+
+
 # Remove the first occurence of a value
 valToRemove = 1
 [[0, 1, 1, 0], [0, 0, 1, 1], [1, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]]
