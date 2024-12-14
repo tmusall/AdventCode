@@ -7,13 +7,8 @@ defmodule Advent do
          String.split(entry)
          |> Enum.map(fn strNum -> String.to_integer(strNum) end)
        end)
-    |> Enum.map(fn numList = [a, b | _] ->
-         incDir = if a - b > 0, do: :dec, else: :inc
-         Enum.chunk_every(numList, 2, 1, :discard)
-         |> Enum.map(fn twoNums -> procRecord(twoNums, incDir) end)
-       end)
-    |> evalReportSafety(1)
-    |> evalP2ReportSafety()
+    |> evalP1SafetyReport()
+    |> evalP2SafetyReport()
     :ok
   end
 
@@ -32,54 +27,52 @@ defmodule Advent do
     end
   end
 
-  # Part 1
-  defp evalReportSafety(reportLists, partNum) do
+  defp reportSafety(reportLists, partNum) do
     reportLists
-    |> IO.inspect()
+    #|> IO.inspect(label: "Report")
     |> Enum.map(fn result -> Enum.sum(result) end)
     |> Enum.count(fn x -> x == 0 end)
     |> IO.inspect(label: "Part #{partNum} Safe Reports")
     reportLists
   end
 
+  # Part 1
+  defp evalP1SafetyReport(safetyReports) do
+    safetyReports
+    |> Enum.map(fn numList = [a, b | _] ->
+         incDir = if a - b > 0, do: :dec, else: :inc
+         Enum.chunk_every(numList, 2, 1, :discard)
+         |> Enum.map(fn twoNums -> procRecord(twoNums, incDir) end)
+       end)
+    |> reportSafety(1)
+    safetyReports
+  end
+
   # Part 2
-  defp evalP2ReportSafety(reportLists) do
-    reportLists
-    # Remove the first '1' in the report list and eval again
-    |> Enum.map(fn list ->
-         case Enum.split_while(list, &(&1 != 1)) do
-           {result, [_ | rest]} -> result ++ [0 | rest]
-           {result, []} -> result
+  defp evalP2SafetyReport(safetyReports) do
+    safetyReports
+    |> Enum.map(fn numList = [a, b | _] ->
+         incDir = if a - b > 0, do: :dec, else: :inc
+         result = Enum.chunk_every(numList, 2, 1, :discard)
+         |> Enum.map(fn twoNums -> procRecord(twoNums, incDir) end)
+         case 1 in result do
+           true -> tryOthers(numList)
+           false -> result
          end
        end)
-    |> evalReportSafety(2)
+    |> reportSafety(2)
   end
+
+  defp tryOthers(unsafeList) do
+    Enum.map(0..(length(unsafeList) - 1), &(List.delete_at(unsafeList, &1)))
+    |> Enum.map(fn numList = [a, b | _] ->
+         incDir = if a - b > 0, do: :dec, else: :inc
+         result = Enum.chunk_every(numList, 2, 1, :discard)
+         |> Enum.map(fn twoNums -> procRecord(twoNums, incDir) end)
+       end)
+    |> Enum.find([1], fn list -> Enum.all?(list, &(&1 == 0)) end)
+  end
+
 end
 
-
-# Create sublists from a list
-defmodule ListCombinator do
-  def sublists(list) do
-    Enum.map(0..(length(list) - 1), &(List.delete_at(list, &1)))
-  end
-end
-
-inputList = [1, 2, 3, 4]
-inputList |> IO.inspect(label: "Input")
-
-IO.inspect(ListCombinator.sublists(inputList), label: "Output")
-
-
-# Remove the first occurence of a value
-valToRemove = 1
-[[0, 1, 1, 0], [0, 0, 1, 1], [1, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]]
- |> Enum.map(fn list ->
-      r = Enum.split_while(list, &(&1 != valToRemove))
-      #IO.inspect(r)
-      case r do
-        {result, [_ | rest]} -> result ++ rest
-        {result, []} -> result
-      end
-    end)
-  |> IO.inspect()
 
