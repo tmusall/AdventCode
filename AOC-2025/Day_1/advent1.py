@@ -4,7 +4,6 @@ class AdventOfCode(object):
   def __init__(self, fileName):
     self.fileGen = (row for row in open(fileName, 'r'))
 
-
   def DoWork(self):
     ansPart1 = 0
     ansPart2 = 0
@@ -14,11 +13,17 @@ class AdventOfCode(object):
       line = line.strip('\n')
       direction = line[0]
       clicks = int(line[1:]) * (-1 if 'L' in direction else 1)
+      prevPos = pos
       pos = (pos + clicks) % 100
       ansPart1 += (1 if pos == 0 else 0)
-      
-    return ansPart1, ansPart2
+      if pos != 0 and prevPos != 0:
+        if (((pos < prevPos) and ('R' in direction)) or
+            ((pos > prevPos) and ('L' in direction))):
+          ansPart2 += 1
+      ansPart2 += int(abs(clicks) / 100)
 
+    ansPart2 += ansPart1
+    return ansPart1, ansPart2
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
