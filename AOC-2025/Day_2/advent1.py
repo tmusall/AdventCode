@@ -1,4 +1,4 @@
-import sys
+import sys, re
 
 class AdventOfCode(object):
   def __init__(self, fileName):
@@ -18,10 +18,13 @@ class AdventOfCode(object):
   def ValidateId_Part2(self, id):
     ans = 0
     idStr = str(id)
-    half = int(len(idStr) / 2)
-    if idStr[:half] in idStr[half:]:
-      print(f'Found one: {id}')
-      ans = id
+
+    half = int(len(idStr) / 2) + 1
+    for x in range(1, half):
+      if re.match(r'^(.{' + f'{x}' + r'})\1+$', idStr) != None: # Check pattern in string
+        #print(f'Match: {id}')
+        return id
+
     return ans
 
   def DoWork(self):
