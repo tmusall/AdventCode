@@ -14,6 +14,29 @@ class AdventOfCode(object):
 
     return ans
 
+  def CalcBigJoltage(self, bank: str) -> int:
+    print(bank)
+    ans = 0
+    hitCnt = 0
+    digiDict = { '9':[], '8':[],'7':[], '6':[], '5':[], '4':[], '3':[], '2':[], '1':[] }
+    digiList = [ -1 for x in range(12) ]
+    for d in '987654321':
+      pos = 0
+      while True:
+        pos = bank.find(d, pos)
+        if pos != -1:
+          hitCnt += 1
+          digiDict[d].append(pos)
+          print(pos)
+          digiList[pos] = d
+          pos += 1
+          if hitCnt == 12:
+            break
+        else:
+          break
+    print(digiList)
+    return ans
+
   def DoWork(self):
     ansPart1 = 0
     ansPart2 = 0
@@ -21,6 +44,7 @@ class AdventOfCode(object):
     for line in self.fileGen:
       line = line.strip('\n')
       ansPart1 += self.CalcJoltage(line)
+      ansPart2 += self.CalcBigJoltage(line)
 
     return ansPart1, ansPart2
 
