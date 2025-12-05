@@ -5,25 +5,13 @@ class AdventOfCode(object):
     self.fileGen = (row for row in open(fileName, 'r'))
 
   def CalcJoltage(self, bank: str) -> int:
-    print(bank)
-    j1 = [-1, 0]
-    j2 = [-1, 0]
     ans = 0
 
-    for digit in range(9, 0, -1):
-      pos = bank.find(str(digit))
-      if pos > -1 and j1[1] < digit and pos != j2[0]:
-        j1[0] = pos
-        j1[1] = digit
+    for idx,digit in enumerate(bank):
+      for x in (int(c) for c in bank[idx+1:]):
+        prod = int(digit) * 10 + x
+        ans = prod if prod > ans else ans
 
-      pos = bank.rfind(str(digit))
-      if pos > -1 and j2[1] < digit and pos > j1[0]:
-        j2[0] = pos
-        j2[1] = digit
-
-    ans = (j1[1] if j1[0] < j2[0] else j2[1]) * 10 + \
-            (j2[1] if j2[0] > j1[0] else j1[1])
-    print(j1, '  ', j2, '  ', ans)
     return ans
 
   def DoWork(self):
